@@ -72,84 +72,104 @@ const setupRoutes = (client) => {
 
         switch (conversation.step) {
             case 0:
-                await sendMessage("Olá, tudo bem? Somos a Nonato Imóveis, especialistas em imóveis de leilão. Qual é o seu nome?");
-                conversation.step = 1;
-                break;
-
+                setTimeout(async () => {
+                    await sendMessage("Olá, tudo bem? Somos a Nonato Imóveis, especialistas em imóveis de leilão. Qual é o seu nome?");
+                    conversation.step = 1;
+                }, 7000); // 7 segundos de delay
+            break;
+            
             case 1:
-                conversation.name = messageBody;
-                await sendMessage(`Olá, ${conversation.name}. Tudo bem? Você já adquiriu um imóvel de leilão antes?`);
-                conversation.step = 2;
-                break;
-
+                setTimeout(async () => {
+                    conversation.name = messageBody;
+                    await sendMessage(`Olá, ${conversation.name}. Tudo bem? Você já adquiriu um imóvel de leilão antes?`);
+                    conversation.step = 2;
+                }, 7000); // 7 segundos de delay
+            break;
+            
             case 2:
-                if (messageBody.includes('sim') || messageBody === 's') {
-                    await sendMessage('Ótimo, foi conosco?');
-                    conversation.step = 3;
-                } else if (messageBody.includes('não') || messageBody.includes('nao') || messageBody === 'n') {
-                    await sendMessage("Ótimo, vou te dar algumas instruções sobre como funciona o processo com a nossa equipe. Nossa equipe realiza arrematações diariamente e oferece consultoria completa. E o melhor de tudo: nossa consultoria é paga pela Caixa Econômica Federal, sem custo adicional para você. Posso te enviar um audio explicativo com mais detalhes?");
-                    conversation.step = 4;
-                } else {
-                    await sendMessage("Por favor, responda com 'sim' ou 'não'.");
-                }
-                break;
-
+                setTimeout(async () => {
+                    if (messageBody.includes('sim') || messageBody === 's') {
+                        await sendMessage('Ótimo, foi conosco?');
+                        conversation.step = 3;
+                    } else if (messageBody.includes('não') || messageBody.includes('nao') || messageBody === 'n') {
+                        await sendMessage("Ótimo, vou te dar algumas instruções sobre como funciona o processo com a nossa equipe. Nossa equipe realiza arrematações diariamente e oferece consultoria completa. E o melhor de tudo: nossa consultoria é paga pela Caixa Econômica Federal, sem custo adicional para você. Posso te enviar um audio explicativo com mais detalhes?");
+                        conversation.step = 4;
+                    } else {
+                        await sendMessage("Por favor, responda com 'sim' ou 'não'.");
+                    }
+                }, 7000); // 7 segundos de delay
+            break;
+            
             case 3:
-                if (messageBody.includes('sim') || messageBody === 's') {
-                    await sendMessage("Perfeito! Como posso te ajudar hoje?");
-                    conversation.step = 5;
-                } else if (messageBody.includes('não') || messageBody.includes('nao') || messageBody === 'n') {
-                    await sendMessage("Bacana, temos diversas opções de imóveis no estado de Goiás. Quais dessas regiões é do seu interesse? Entorno do DF, Interior de Goiás ou Grande Goiânia?");
-                    conversation.step = 6;
-                } else {
-                    await sendMessage("Por favor, responda com 'sim' ou 'não'.");
-                }
-                break;
-
-                case 4:
+                setTimeout(async () => {
+                    if (messageBody.includes('sim') || messageBody === 's') {
+                        await sendMessage("Perfeito! Como posso te ajudar hoje?");
+                        conversation.step = 5;
+                    } else if (messageBody.includes('não') || messageBody.includes('nao') || messageBody === 'n') {
+                        await sendMessage("Bacana, temos diversas opções de imóveis no estado de Goiás. Quais dessas regiões é do seu interesse? Entorno do DF, Interior de Goiás ou Grande Goiânia?");
+                        conversation.step = 6;
+                    } else {
+                        await sendMessage("Por favor, responda com 'sim' ou 'não'.");
+                    }
+                }, 7000); // 7 segundos de delay
+            break;
+            
+            case 4:
+                setTimeout(async () => {
                     if (messageBody.includes('sim') || messageBody === 's') {
                         await sendAudio('audioExplicativo', from); // Passando 'from' como ID do chat
+                        setTimeout(async () => {
                         await sendMessage("Agora que você tem uma ideia de como funciona, quais dessas regiões é do seu interesse? Entorno do DF, Interior de Goiás ou Grande Goiânia?");
                         conversation.step = 6;
+                            }, 67000); // 67 segundos de delay para o áudio
                     } else if (messageBody.includes('não') || messageBody.includes('nao') || messageBody === 'n') {
                         await sendMessage("Ok, vou te enviar o link do nosso portal onde você encontrará mais informações: https://leilaoimoveisgoiania.com.br/.");
                         delete conversations[from];
                     } else {
-                        await sendMessage("Por favor, responda com 'sim' ou 'não'.");
+                         await sendMessage("Por favor, responda com 'sim' ou 'não'.");
                     }
-                    break;
-
+                }, 7000); // 7 segundos de delay
+            break;
+            
             case 5:
-                await sendMessage(`Muito obrigado por entrar em contato com a Nonato Imóveis, ${conversation.name}. Não esqueça que nossa consultoria é paga pela Caixa Econômica Federal, então estamos aqui para te ajudar em cada passo, sem custo adicional para você. Tenha um ótimo dia!`);
-                delete conversations[from];
-                break;
-
+                setTimeout(async () => {
+                    await sendMessage(`Muito obrigado por entrar em contato com a Nonato Imóveis, ${conversation.name}. Não esqueça que nossa consultoria é paga pela Caixa Econômica Federal, então estamos aqui para te ajudar em cada passo, sem custo adicional para você. Tenha um ótimo dia!`);
+                    delete conversations[from];
+                }, 7000); // 7 segundos de delay
+            break;
+            
             case 6:
-                if (messageBody.includes('df')) {
-                    await sendMessage("Ah, que bom! Nossos corretores de DF vão entrar em contato.");
-                    delete conversations[from];
-                } else if (messageBody.includes('goiás') || messageBody.includes('goiânia')) {
-                    await sendMessage("Seu interesse é de moradia ou para investimento?");
-                    conversation.step = 7;
-                } else {
-                    await sendMessage("Por favor, responda com 'DF', 'interior de Goiás' ou 'Grande Goiânia'.");
-                }
-                break;
-
+                setTimeout(async () => {
+                    if (messageBody.includes('df')) {
+                        await sendMessage("Ah, que bom! Nossos corretores de DF vão entrar em contato.");
+                        delete conversations[from];
+                    } else if (messageBody.includes('goiás') || messageBody.includes('goiânia')) {
+                        await sendMessage("Seu interesse é de moradia ou para investimento?");
+                        conversation.step = 7;
+                    } else {
+                        await sendMessage("Por favor, responda com 'DF', 'interior de Goiás' ou 'Grande Goiânia'.");
+                    }
+                }, 7000); // 7 segundos de delay
+             break;
+            
             case 7:
-                if (messageBody.includes('moradia') || messageBody.includes('investimento') || messageBody.includes('vender') || messageBody.includes('comprar')) {
-                    await sendMessage("Dá uma olhada no nosso site para ver se algum imóvel te interessa: https://leilaoimoveisgoiania.com.br/");
-                    delete conversations[from];
-                } else {
-                    await sendMessage("Não entendi, pode falar de outra forma?");
-                }
-                break;
-
+                setTimeout(async () => {
+                    if (messageBody.includes('moradia') || messageBody.includes('investimento') || messageBody.includes('vender') || messageBody.includes('comprar')) {
+                        await sendMessage("Dá uma olhada no nosso site para ver se algum imóvel te interessa: https://leilaoimoveisgoiania.com.br/");
+                        delete conversations[from];
+                    } else {
+                        await sendMessage("Não entendi, pode falar de outra forma?");
+                     }
+                }, 7000); // 7 segundos de delay
+            break;
+            
             default:
-                await sendMessage("Olá, tudo bem? Somos a Nonato Imóveis, especialistas em imóveis de leilão. Qual é o seu nome?");
-                conversation.step = 1;
-                break;
-        }
+                setTimeout(async () => {
+                    await sendMessage("Olá, tudo bem? Somos a Nonato Imóveis, especialistas em imóveis de leilão. Qual é o seu nome?");
+                    conversation.step = 1;
+                }, 7000); // 7 segundos de delay
+             break;
+        }            
     });
 
     return router;
