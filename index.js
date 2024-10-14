@@ -68,6 +68,9 @@ client.on('qr', (qr) => {
 // Login após escanear o QR code
 client.on('ready', () => {
     console.log('WhatsApp client is ready!');
+    console.log('Iniciando envio de áudio...');
+    sendTestAudio(client, '556281977956@c.us'); // Substitua pelo ID do chat desejado
+    sendMessage(client, '556281977956@c.us', 'Olá, esta é uma mensagem de teste!');
 });
 
 // Manipular erros de autenticação
