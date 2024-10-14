@@ -9,7 +9,29 @@ const axios = require("axios");
 require('dotenv').config();
 
 app.use(bodyParser.json());
- 
+
+// Criar uma nova instância do router
+const router = express.Router();
+
+router.get('/check-browser', (req, res) => {
+    const userAgent = req.headers['user-agent'];
+
+    // Check for Chrome
+    const isChrome = userAgent.includes('Chrome') && !userAgent.includes('Edg');
+    // Check for Edge
+    const isEdge = userAgent.includes('Edg');
+
+    if (isChrome) {
+        console.log("The browser is Chrome.");
+    } else if (isEdge) {
+        console.log("The browser is Edge.");
+    } else {
+        console.log("The browser is neither Chrome nor Edge.");
+    }
+
+    res.send('User Agent Check Completed');
+});
+
 // Configuração do banco de dados
 const db = mysql.createConnection({
     host: process.env.DB_HOST,
@@ -63,6 +85,7 @@ client.initialize()
     .then(() => {
         console.log('WhatsApp client initializing...');
         app.use('/api', setupRoutes(client)); // Passa o client para as rotas após inicialização
+        app.use('/api', router); // Usar o router para a rota de verificação
     })
     .catch((err) => console.error('Client initialization failed:', err));
 
