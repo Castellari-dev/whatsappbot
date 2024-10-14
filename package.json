@@ -8,8 +8,7 @@
     "node-cron": "^3.0.3",
     "parser": "^0.1.4",
     "qrcode-terminal": "^0.12.0",
-    "whatsapp-web.js": "^1.26.0",
-    "wwebjs": "^1.23.1-alpha.7"
+    "whatsapp-web.js": "^1.26.0"
   },
   "scripts": {
     "start": "node index.js"

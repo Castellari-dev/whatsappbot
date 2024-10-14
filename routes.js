@@ -6,7 +6,8 @@ const path = require('path');
 
 // Objeto para armazenar os caminhos de mídia
 const mediaFiles = {
-    audioExplicativo: path.join(__dirname, 'media', 'audio_empresa.ogg'), // Alterado para .ogg
+    audioExplicativo: path.join(__dirname, 'audio_empresa.ogg'), // Manter o áudio, se necessário
+    caneca: path.join(__dirname, 'media', 'caneca.jpg'), // Adicionando a imagem
 };
 
 let conversations = {}; // Objeto para armazenar o estado das conversas
@@ -23,7 +24,7 @@ const isRecentMessage = (messageTimestamp) => {
 // Função para configurar rotas, que aceita o cliente como parâmetro
 const setupRoutes = (client) => {
     client.on('message', async (message) => {
-        const from = message.from;
+        const from = message.from; // ID do remetente
         const messageBody = message.body.trim().toLowerCase();
         const messageTimestamp = message.timestamp;
 
@@ -42,56 +43,31 @@ const setupRoutes = (client) => {
             await client.sendMessage(from, msg);
         };
 
-        const sendTestAudio = async (client, chatId) => {
-            try {
-                const audioPath = path.join(__dirname, 'media', 'audio_empresa.ogg');
-                console.log('Caminho do arquivo de áudio:', audioPath);
-        
-                if (!fs.existsSync(audioPath)) {
-                    console.error('Arquivo de áudio não encontrado:', audioPath);
-                    return;
-                }
-        
-                const media = MessageMedia.fromFilePath(audioPath);
-                const chat = await client.getChatById(chatId);
-                console.log('Chat ID:', chatId);
-                
-                console.log('Tentando enviar áudio...');
-                await chat.sendMessage(media);
-                console.log('Áudio enviado com sucesso!');
-            } catch (error) {
-                console.error('Erro ao enviar o áudio:', error.message);
-            }
-        };
-
-        const sendAudio = async (audioKey) => {
+        const sendAudio = async (audioKey, chatId) => {
             try {
                 const audioPath = mediaFiles[audioKey];
                 console.log('Caminho do arquivo de áudio:', audioPath); // Imprime o caminho do arquivo
-
+        
                 // Verificando se o arquivo de áudio existe
                 if (!fs.existsSync(audioPath)) {
                     console.error('Arquivo de áudio não encontrado:', audioPath);
                     return;
                 }
-
+        
                 // Cria a mídia a partir do arquivo de áudio
-                const media = MessageMedia.fromFilePath(audioPath);
-                
-                const chat = await client.getChatById(from);
-                console.log('Chat ID:', from);
-                
+                const audio = await MessageMedia.fromFilePath(audioPath);
+                console.log('audio:', audio);
                 console.log('Tentando enviar áudio...');
                 
                 // Envia a mensagem de áudio
-                await chat.sendMessage(media, { sendAudioAsVoice: true }); // Tenta enviar como mensagem de voz
+                await client.sendMessage(chatId, audio, { sendAudioAsVoice: true});
+                console.log("chat id:", chatId);
                 console.log('Áudio enviado com sucesso!');
             } catch (error) {
                 console.error('Erro ao enviar o áudio:', error.message);
                 console.error(error);
             }
         };
-        
         const conversation = conversations[from];
 
         switch (conversation.step) {
@@ -111,7 +87,7 @@ const setupRoutes = (client) => {
                     await sendMessage('Ótimo, foi conosco?');
                     conversation.step = 3;
                 } else if (messageBody.includes('não') || messageBody.includes('nao') || messageBody === 'n') {
-                    await sendMessage("Ótimo, vou te dar algumas instruções sobre como funciona o processo com a nossa equipe. Nossa equipe realiza arrematações diariamente e oferece consultoria completa. E o melhor de tudo: nossa consultoria é paga pela Caixa Econômica Federal, sem custo adicional para você. Posso te enviar um áudio explicativo com mais detalhes?");
+                    await sendMessage("Ótimo, vou te dar algumas instruções sobre como funciona o processo com a nossa equipe. Nossa equipe realiza arrematações diariamente e oferece consultoria completa. E o melhor de tudo: nossa consultoria é paga pela Caixa Econômica Federal, sem custo adicional para você. Posso te enviar um audio explicativo com mais detalhes?");
                     conversation.step = 4;
                 } else {
                     await sendMessage("Por favor, responda com 'sim' ou 'não'.");
@@ -130,19 +106,18 @@ const setupRoutes = (client) => {
                 }
                 break;
 
-            case 4:
-                if (messageBody.includes('sim') || messageBody === 's') {
-                    await sendMessage("Vou enviar o áudio explicativo para você agora!");
-                    await sendAudio('audioExplicativo');
-                    await sendMessage("Agora que você tem uma ideia de como funciona, quais dessas regiões é do seu interesse? Entorno do DF, Interior de Goiás ou Grande Goiânia?");
-                    conversation.step = 6;
-                } else if (messageBody.includes('não') || messageBody.includes('nao') || messageBody === 'n') {
-                    await sendMessage("Ok, vou te enviar o link do nosso portal onde você encontrará mais informações: https://leilaoimoveisgoiania.com.br/.");
-                    delete conversations[from];
-                } else {
-                    await sendMessage("Por favor, responda com 'sim' ou 'não'.");
-                }
-                break;
+                case 4:
+                    if (messageBody.includes('sim') || messageBody === 's') {
+                        await sendAudio('audioExplicativo', from); // Passando 'from' como ID do chat
+                        await sendMessage("Agora que você tem uma ideia de como funciona, quais dessas regiões é do seu interesse? Entorno do DF, Interior de Goiás ou Grande Goiânia?");
+                        conversation.step = 6;
+                    } else if (messageBody.includes('não') || messageBody.includes('nao') || messageBody === 'n') {
+                        await sendMessage("Ok, vou te enviar o link do nosso portal onde você encontrará mais informações: https://leilaoimoveisgoiania.com.br/.");
+                        delete conversations[from];
+                    } else {
+                        await sendMessage("Por favor, responda com 'sim' ou 'não'.");
+                    }
+                    break;
 
             case 5:
                 await sendMessage(`Muito obrigado por entrar em contato com a Nonato Imóveis, ${conversation.name}. Não esqueça que nossa consultoria é paga pela Caixa Econômica Federal, então estamos aqui para te ajudar em cada passo, sem custo adicional para você. Tenha um ótimo dia!`);

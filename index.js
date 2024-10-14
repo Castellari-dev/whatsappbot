@@ -1,7 +1,7 @@
 const qrcode = require('qrcode-terminal');
-const { Client, LocalAuth } = require('wwebjs');
 const express = require("express");
 const bodyParser = require("body-parser");
+const { Client, LocalAuth } = require('whatsapp-web.js');
 const mysql = require("mysql2");
 const setupRoutes = require('./routes'); // Atualiza a importação das rotas
 const app = express();
@@ -12,25 +12,6 @@ app.use(bodyParser.json());
 
 // Criar uma nova instância do router
 const router = express.Router();
-
-router.get('/check-browser', (req, res) => {
-    const userAgent = req.headers['user-agent'];
-
-    // Check for Chrome
-    const isChrome = userAgent.includes('Chrome') && !userAgent.includes('Edg');
-    // Check for Edge
-    const isEdge = userAgent.includes('Edg');
-
-    if (isChrome) {
-        console.log("The browser is Chrome.");
-    } else if (isEdge) {
-        console.log("The browser is Edge.");
-    } else {
-        console.log("The browser is neither Chrome nor Edge.");
-    }
-
-    res.send('User Agent Check Completed');
-});
 
 // Configuração do banco de dados
 const db = mysql.createConnection({
@@ -53,9 +34,19 @@ db.connect((err) => {
 // Inicializar o cliente do WhatsApp com persistência de sessão
 const client = new Client({
     authStrategy: new LocalAuth(),
-    puppeteer: {
-        headless: true,
-        args: ['--no-sandbox', '--disable-setuid-sandbox']
+    puppeteer: { 
+        headless: false,
+        executablePath: 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
+        args: [
+            "--no-sandbox",
+            "--disable-setuid-sandbox",
+            "--disable-extensions",
+            '--disable-gpu', 
+            "--disable-accelerated-2d-canvas",
+            "--no-first-run",
+            "--no-zygote",
+            '--disable-dev-shm-usage'
+        ],
     }
 });
 
@@ -68,10 +59,9 @@ client.on('qr', (qr) => {
 // Login após escanear o QR code
 client.on('ready', () => {
     console.log('WhatsApp client is ready!');
-    console.log('Iniciando envio de áudio...');
-    sendTestAudio(client, '556281977956@c.us'); // Substitua pelo ID do chat desejado
-    sendMessage(client, '556281977956@c.us', 'Olá, esta é uma mensagem de teste!');
 });
+
+// Evento chamado quando o cliente é autenticado
 
 // Manipular erros de autenticação
 client.on('auth_failure', (msg) => {
