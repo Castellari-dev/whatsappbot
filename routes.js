@@ -8,7 +8,6 @@ const client = new Client(); // Cria uma instância do cliente
 // Objeto para armazenar os caminhos de mídia
 const mediaFiles = {
     audioExplicativo: path.join(__dirname, 'audio_empresa.ogg'), // Manter o áudio, se necessário
-    caneca: path.join(__dirname, 'media', 'caneca.jpg'), // Adicionando a imagem
 };
 
 let conversations = {}; // Objeto para armazenar o estado das conversas
