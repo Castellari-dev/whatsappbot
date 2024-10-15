@@ -34,7 +34,31 @@ const cidades = [
     "itumbiara", "jaragua", "jatai", "luziania", "mineiros", "monte alegre de goias", "morrinhos", "nazario", "neropolis", 
     "niquelandia", "novo gama", "padre bernardo", "palmeiras de goias", "paranaiguara", "planaltina", "pontalina", 
     "porangatu", "professor jamil", "rialma", "rio verde", "santa helena de goias", "santo antonio do descoberto", 
-    "sao joao d'alianca" 
+    "sao joao d'alianca", "abadiânia", "adelândia", "água limpa", "águas lindas de goiás", "alexânia", "americano do brasil", "anápolis", 
+    "anicuns", "aparecida de goiânia", "aragarças", "aragoiânia", "arenópolis", "barro alto", "bela vista de goiás", 
+    "bom jesus", "brazabrantes", "buriti de goiás", "caldas novas", "campinorte", "campos belos", "catalão", 
+    "cidade ocidental", "cocalzinho de goiás", "crixás", "firminópolis", "flores de goiás", "formosa", "goianápolis", 
+    "goianésia", "goiânia", "goianira", "goiatuba", "guapó", "hidrolândia", "iaciara", "inhumas", "ipameri", "itaberaí", 
+    "itumbiara", "jaraguá", "jatai", "luziânia", "mineiros", "monte alegre de goiás", "morrinhos", "nazário", "nerópolis", 
+    "niquelândia", "novo gama", "padre bernardo", "palmeiras de goiás", "paranaiguara", "planaltina", "pontalina", 
+    "porangatu", "professor jamil", "rialma", "rio verde", "santa helena de goiás", "santo antônio do descoberto", 
+    "são joão d'aliança", "ABADIÂNIA", "ADELÂNDIA", "ÁGUA LIMPA", "ÁGUAS LINDAS DE GOIÁS", "ALEXÂNIA", "AMERICANO DO BRASIL", "ANÁPOLIS", 
+    "ANICUNS", "APARECIDA DE GOIÂNIA", "ARAGARÇAS", "ARAGOIÂNIA", "ARENÓPOLIS", "BARRO ALTO", "BELA VISTA DE GOIÁS", 
+    "BOM JESUS", "BRAZABRANTES", "BURITI DE GOIÁS", "CALDAS NOVAS", "CAMPINORTE", "CAMPOS BELOS", "CATALÃO", 
+    "CIDADE OCIDENTAL", "COCALZINHO DE GOIÁS", "CRIXÁS", "FIRMINÓPOLIS", "FLORES DE GOIÁS", "FORMOSA", "GOIANÁPOLIS", 
+    "GOIANÉSIA", "GOIÂNIA", "GOIANIRA", "GOIATUBA", "GUAPÓ", "HIDROLÂNDIA", "IACIARA", "INHUMAS", "IPAMERI", "ITABERAÍ", 
+    "ITUMBIARA", "JARAGUÁ", "JATAÍ", "LUZIÂNIA", "MINEIROS", "MONTE ALEGRE DE GOIÁS", "MORRINHOS", "NAZÁRIO", "NERÓPOLIS", 
+    "NIQUELÂNDIA", "NOVO GAMA", "PADRE BERNARDO", "PALMEIRAS DE GOIÁS", "PARANAIGUARA", "PLANALTINA", "PONTALINA", 
+    "PORANGATU", "PROFESSOR JAMIL", "RIALMA", "RIO VERDE", "SANTA HELENA DE GOIÁS", "SANTO ANTÔNIO DO DESCOBERTO", 
+    "SÃO JOÃO D'ALIANÇA",     "ABADIANIA", "ADELANDIA", "AGUA LIMPA", "AGUAS LINDAS DE GOIAS", "ALEXANIA", "AMERICANO DO BRASIL", "ANAPOLIS", 
+    "ANICUNS", "APARECIDA DE GOIANIA", "ARAGARCAS", "ARAGOIANIA", "ARENOPOLIS", "BARRO ALTO", "BELA VISTA DE GOIAS", 
+    "BOM JESUS", "BRAZABRANTES", "BURITI DE GOIAS", "CALDAS NOVAS", "CAMPINORTE", "CAMPOS BELOS", "CATALAO", 
+    "CIDADE OCIDENTAL", "COCALZINHO DE GOIAS", "CRIXAS", "FIRMINOPOLIS", "FLORES DE GOIAS", "FORMOSA", "GOIANAPOLIS", 
+    "GOIANESIA", "GOIANIA", "GOIANIRA", "GOIATUBA", "GUAPO", "HIDROLANDIA", "IACIARA", "INHUMAS", "IPAMERI", "ITABERAI", 
+    "ITUMBIARA", "JARAGUA", "JATAI", "LUZIANIA", "MINEIROS", "MONTE ALEGRE DE GOIAS", "MORRINHOS", "NAZARIO", "NEROPOLIS", 
+    "NIQUELANDIA", "NOVO GAMA", "PADRE BERNARDO", "PALMEIRAS DE GOIAS", "PARANAIGUARA", "PLANALTINA", "PONTALINA", 
+    "PORANGATU", "PROFESSOR JAMIL", "RIALMA", "RIO VERDE", "SANTA HELENA DE GOIAS", "SANTO ANTONIO DO DESCOBERTO", 
+    "SAO JOAO D'ALIANCA", "aparecida", "parecida"
 ]
 
 
@@ -296,46 +320,46 @@ const setupRoutes = (client) => {
                 }, 1000);
                 break;
                 
-                case 13:
-                    setTimeout(async () => {
-                        // Verifica se o cliente mencionou 'setor', 'jardim' ou 'vila' no nome do local
-                        if (messageBody.includes('setor') || messageBody.includes('jardim') || messageBody.includes('vila')) {
-                            // Armazena o nome completo do local (setor, jardim ou vila)
-                            const local = messageBody.trim().toLowerCase().replace(/\s+/g, '-'); // Converte para minúsculas e substitui espaços por hífen
+            case 13:
+                setTimeout(async () => {
+                    // Verifica se o cliente mencionou 'setor', 'jardim' ou 'vila' no nome do local
+                    if (messageBody.includes('setor') || messageBody.includes('jardim') || messageBody.includes('vila')) {
+                        // Armazena o nome completo do local (setor, jardim ou vila)
+                        const local = messageBody.trim().toLowerCase().replace(/\s+/g, '-'); // Converte para minúsculas e substitui espaços por hífen
                 
-                            // Adiciona o local à URL
-                            conversation.url += local;
+                        // Adiciona o local à URL
+                        conversation.url += local;
                             
-                            // Pergunta sobre a finalidade
-                            await sendMessage(`Agora, para finalizar, qual é a finalidade do uso da propriedade? Escolha entre: residencial, industrial, comercial ou rural.`);
-                            conversation.step = 14;
-                        } else {
-                            await sendMessage("Por favor, insira um setor, jardim ou vila como parte do endereço.");
-                        }
-                    }, 1000);
-                    break;
+                        // Pergunta sobre a finalidade
+                        await sendMessage(`Agora, para finalizar, qual é a finalidade do uso da propriedade? Escolha entre: residencial, industrial, comercial ou rural.`);
+                        conversation.step = 14;
+                    } else {
+                        await sendMessage("Por favor, insira um setor, jardim ou vila como parte do endereço.");
+                    }
+                }, 1000);
+                break;
                 
-                case 14:
-                    setTimeout(async () => {
-                        // Lista de finalidades permitidas
-                        const finalidades = ['residencial', 'industrial', 'comercial', 'rural'];
+            case 14:
+                setTimeout(async () => {
+                    // Lista de finalidades permitidas
+                    const finalidades = ['residencial', 'industrial', 'comercial', 'rural'];
                 
-                        // Verifica se o cliente mencionou uma das finalidades
-                        const finalidadeEscolhida = finalidades.find(finalidade => messageBody.includes(finalidade));
+                    // Verifica se o cliente mencionou uma das finalidades
+                    const finalidadeEscolhida = finalidades.find(finalidade => messageBody.includes(finalidade));
                 
-                        if (finalidadeEscolhida) {
-                            // Adiciona a finalidade à URL como o último parâmetro
-                            conversation.url += `?finalidade=${finalidadeEscolhida}`;
+                    if (finalidadeEscolhida) {
+                        // Adiciona a finalidade à URL como o último parâmetro
+                        conversation.url += `?finalidade=${finalidadeEscolhida}`;
                 
-                            // Envia o link completo para o cliente
-                            await sendMessage(`Perfeito! Aqui está o link completo com as opções que você selecionou: ${conversation.url}`);
+                        // Envia o link completo para o cliente
+                        await sendMessage(`Perfeito! Aqui está o link completo com as opções que você selecionou: ${conversation.url}`);
                             
-                            delete conversations[from]; // Finaliza a conversa
-                        } else {
-                            await sendMessage("Por favor, escolha entre as finalidades: residencial, industrial, comercial ou rural.");
-                        }
-                    }, 1000);
-                    break;
+                        delete conversations[from]; // Finaliza a conversa
+                    } else {
+                        await sendMessage("Por favor, escolha entre as finalidades: residencial, industrial, comercial ou rural.");
+                    }
+                }, 1000);
+                break;
         }
     });
 };
