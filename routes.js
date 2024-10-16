@@ -38,19 +38,19 @@ const cidades = [
     "anicuns", "aparecida de goiânia", "aragarças", "aragoiânia", "arenópolis", "barro alto", "bela vista de goiás", 
     "bom jesus", "brazabrantes", "buriti de goiás", "caldas novas", "campinorte", "campos belos", "catalão", 
     "cidade ocidental", "cocalzinho de goiás", "crixás", "firminópolis", "flores de goiás", "formosa", "goianápolis", 
-    "goianésia", "goiânia", "goianira", "goiatuba", "guapó", "hidrolândia", "iaciara", "inhumas", "ipameri", "itaberaí", 
+    "goianésia", "goiânia", "goianira","trindade", "goiatuba", "guapó", "hidrolândia", "iaciara", "inhumas", "ipameri", "itaberaí", 
     "itumbiara", "jaraguá", "jatai", "luziânia", "mineiros", "monte alegre de goiás", "morrinhos", "nazário", "nerópolis", 
     "niquelândia", "novo gama", "padre bernardo", "palmeiras de goiás", "paranaiguara", "planaltina", "pontalina", 
-    "porangatu", "professor jamil", "rialma", "rio verde", "santa helena de goiás", "santo antônio do descoberto", 
+    "porangatu", "Trindade", "professor jamil", "rialma", "rio verde", "santa helena de goiás", "santo antônio do descoberto", 
     "são joão d'aliança", "ABADIÂNIA", "ADELÂNDIA", "ÁGUA LIMPA", "ÁGUAS LINDAS DE GOIÁS", "ALEXÂNIA", "AMERICANO DO BRASIL", "ANÁPOLIS", 
     "ANICUNS", "APARECIDA DE GOIÂNIA", "ARAGARÇAS", "ARAGOIÂNIA", "ARENÓPOLIS", "BARRO ALTO", "BELA VISTA DE GOIÁS", 
     "BOM JESUS", "BRAZABRANTES", "BURITI DE GOIÁS", "CALDAS NOVAS", "CAMPINORTE", "CAMPOS BELOS", "CATALÃO", 
     "CIDADE OCIDENTAL", "COCALZINHO DE GOIÁS", "CRIXÁS", "FIRMINÓPOLIS", "FLORES DE GOIÁS", "FORMOSA", "GOIANÁPOLIS", 
     "GOIANÉSIA", "GOIÂNIA", "GOIANIRA", "GOIATUBA", "GUAPÓ", "HIDROLÂNDIA", "IACIARA", "INHUMAS", "IPAMERI", "ITABERAÍ", 
-    "ITUMBIARA", "JARAGUÁ", "JATAÍ", "LUZIÂNIA", "MINEIROS", "MONTE ALEGRE DE GOIÁS", "MORRINHOS", "NAZÁRIO", "NERÓPOLIS", 
+    "ITUMBIARA", "JARAGUÁ", "JATAÍ", "TRINDADE", "LUZIÂNIA", "MINEIROS", "MONTE ALEGRE DE GOIÁS", "MORRINHOS", "NAZÁRIO", "NERÓPOLIS", 
     "NIQUELÂNDIA", "NOVO GAMA", "PADRE BERNARDO", "PALMEIRAS DE GOIÁS", "PARANAIGUARA", "PLANALTINA", "PONTALINA", 
     "PORANGATU", "PROFESSOR JAMIL", "RIALMA", "RIO VERDE", "SANTA HELENA DE GOIÁS", "SANTO ANTÔNIO DO DESCOBERTO", 
-    "SÃO JOÃO D'ALIANÇA",     "ABADIANIA", "ADELANDIA", "AGUA LIMPA", "AGUAS LINDAS DE GOIAS", "ALEXANIA", "AMERICANO DO BRASIL", "ANAPOLIS", 
+    "SÃO JOÃO D'ALIANÇA", "ABADIANA", "ADELANDIA", "AGUA LIMPA", "AGUAS LINDAS DE GOIAS", "ALEXANIA", "AMERICANO DO BRASIL", "ANAPOLIS", 
     "ANICUNS", "APARECIDA DE GOIANIA", "ARAGARCAS", "ARAGOIANIA", "ARENOPOLIS", "BARRO ALTO", "BELA VISTA DE GOIAS", 
     "BOM JESUS", "BRAZABRANTES", "BURITI DE GOIAS", "CALDAS NOVAS", "CAMPINORTE", "CAMPOS BELOS", "CATALAO", 
     "CIDADE OCIDENTAL", "COCALZINHO DE GOIAS", "CRIXAS", "FIRMINOPOLIS", "FLORES DE GOIAS", "FORMOSA", "GOIANAPOLIS", 
@@ -58,16 +58,14 @@ const cidades = [
     "ITUMBIARA", "JARAGUA", "JATAI", "LUZIANIA", "MINEIROS", "MONTE ALEGRE DE GOIAS", "MORRINHOS", "NAZARIO", "NEROPOLIS", 
     "NIQUELANDIA", "NOVO GAMA", "PADRE BERNARDO", "PALMEIRAS DE GOIAS", "PARANAIGUARA", "PLANALTINA", "PONTALINA", 
     "PORANGATU", "PROFESSOR JAMIL", "RIALMA", "RIO VERDE", "SANTA HELENA DE GOIAS", "SANTO ANTONIO DO DESCOBERTO", 
-    "SAO JOAO D'ALIANCA", "aparecida", "parecida"
+    "SAO JOAO D'ALIANCA", "aparecida", "parecida", "Go", "go", "gyn", "ap", "ap de goiania" 
 ]
-
-
 
 let conversations = {}; // Objeto para armazenar o estado das conversas
 
 // Função para calcular a diferença de tempo entre agora e o timestamp da mensagem
 const isRecentMessage = (messageTimestamp) => {
-    const now = Math.floor(Date.now() / 1000);
+    const now = Math.floor(Date.now() / 5000);
     const messageAge = now - messageTimestamp;
     const maxAge = 1 * 10; // Aceita mensagens de até 10 segundos de idade
     
@@ -120,7 +118,12 @@ const setupRoutes = (client) => {
         const conversation = conversations[from];
 
         if (!conversations[from]) {
-            conversations[from] = { step: 0, url: 'https://www.nonatoimoveis.com.br/imoveis' }; // Adiciona a url base
+            conversations[from] = {
+                step: 0,
+                url: 'https://www.nonatoimoveis.com.br/imoveis', // URL base
+                name: '',
+                corretor: '' // Inicializa a variável corretor
+            };
         } else if (!conversations[from].url) {
             conversations[from].url = 'https://www.nonatoimoveis.com.br/imoveis'; // Se já existe a conversa, mas a url ainda não foi definida
         }
@@ -128,37 +131,47 @@ const setupRoutes = (client) => {
         switch (conversation.step) {
             case 0:
                 setTimeout(async () => {
-                    await sendMessage("Olá, tudo bem? Somos a Nonato Imóveis, especialistas em imóveis particulares e de leilão. Qual é o seu nome?");
+                    await sendMessage("Olá, tudo bem? Somos a Nonato Imóveis, especialistas em imóveis particulares e de leilão. Qual é o *seu nome?*");
+                      // Resetando a URL para o valor base no início da conversa
+                    conversation.url = 'https://www.nonatoimoveis.com.br/imoveis';
                     conversation.step = 1;
-                }, 1000); // 1 segundo de delay
+                }, 5000); // 1 segundo de delay
                 break;
 
-            case 1:
-                setTimeout(async () => {
-                    conversation.name = messageBody;
-                    await sendMessage(`Olá, ${conversation.name}. Tudo bem? Você tem interesse em imóveis de leilão ou particulares?`);
-                    conversation.step = 2;
-                }, 1000); // 1 segundo de delay
-                break;
+                case 1:
+                    setTimeout(async () => {
+                        // Expressão regular para capturar o nome, removendo introduções como "meu nome é", "eu me chamo", etc.
+                        const mensagemMinuscula = messageBody.toLowerCase().trim();
+                        
+                        // Expressão para remover frases introdutórias comuns
+                        const nomeExtraido = mensagemMinuscula.replace(/(meu nome é|eu me chamo|sou|me chamo|meu nome|eu sou|o meu nome é|chamo)\s*/i, '');
+                
+                        // Se o nome extraído ainda for vazio, use a mensagem inteira como fallback
+                        conversation.name = nomeExtraido.length > 0 ? nomeExtraido : messageBody;
+                
+                        await sendMessage(`Olá, ${conversation.name}. Tudo bem? Você tem interesse em imóveis de *leilão* ou *particulares*?`);
+                        conversation.step = 2;
+                    }, 5000); // 1 segundo de delay
+                    break;
 
                 case 2:
                     setTimeout(async () => {
-                        if (messageBody.includes('leilão')) {
+                        if (messageBody.includes('leilão') || messageBody.includes('leilao') || messageBody.includes('Leilão') || messageBody.includes('Leilao')) {
                             await sendMessage("Ok só um momento enquanto eu te encaminho para a central de leilão");
                             setTimeout(async () => {
                                 conversation.step = 3;  // Atualiza o passo para 3
                                 client.emit('message', message); // Reenvia a mensagem para iniciar o case 3
-                            }, 1000);
-                        } else if (messageBody.includes('particulares')) {
+                            }, 5000);
+                        } else if (messageBody.includes('particulares') || messageBody.includes('particular') || messageBody.includes('particular') ) {
                             await sendMessage('Ok, só um momento enquanto eu te encaminho para a central de imóveis particulares');
                             setTimeout(async () => {
-                                conversation.step = 10;  // Atualiza o passo para 10
+                                conversation.step = 11;  // Atualiza o passo para 10
                                 client.emit('message', message); // Reenvia a mensagem para iniciar o case 10
-                            }, 1000);
+                            }, 5000);
                         } else {
-                            await sendMessage("Por favor, responda com 'sim' ou 'não'.");
+                            await sendMessage("Por favor, responda com 'leilão' ou 'particular'.");
                         }
-                    }, 1000);
+                    }, 5000);
                     break;                
                 
                     case 3:
@@ -166,81 +179,99 @@ const setupRoutes = (client) => {
                             await sendMessage('Olá, meu nome é Sabrina e vou te ajudar com o seu imóvel de leilão hoje');
         
                             setTimeout(async () => {
-                                await sendMessage('Você já adquiriu um imóvel de leilão antes?');
+                                await sendMessage('Você já *adquiriu* um imóvel de leilão antes?');
                                 conversation.step = 4; // Atualiza para a próxima etapa
-                            }, 1000); // Delay de 1 segundo para enviar a próxima mensagem
+                            }, 5000); // Delay de 1 segundo para enviar a próxima mensagem
                         }
                         break;
-                
-                
+            
             case 4:
-                if (conversation.step === 5) { // Verifica se estamos na etapa 5
+                if (conversation.step === 4) { // Verifica se estamos na etapa 5
                     setTimeout(async () => {
                         if (palavrasSim.some(palavra => messageBody.includes(palavra))) {
-                            await sendMessage('Ótimo, e foi conosco?');
+                            await sendMessage('Ótimo, e foi *conosco*?');
                             conversation.step = 5; // Atualiza o passo para 6
                         } else if (palavrasNao.some(palavra => messageBody.includes(palavra))) {
-                            await sendMessage(`Então ${conversation.name}, imagino que você tenha algumas dúvidas de como funciona esse processo, posso te encaminhar um áudio explicando como funciona?`);
-                            conversation.step = 6; // Atualiza o passo para 7
+                            await sendMessage(`Então ${conversation.name}, imagino que você tenha algumas dúvidas de como funciona esse processo, *posso te encaminhar um áudio* explicando como funciona?`);
+                            conversation.step = 7; // Atualiza o passo para 7
                         } else {
                             await sendMessage("Desculpe, não entendi. Você já adquiriu um imóvel de leilão antes?");
                         }
-                    }, 1000);
+                    }, 5000);
                 }
             break;
             
             case 5:
-                setTimeout (async () => {
+                setTimeout(async () => {
                     if (palavrasSim.some(palavra => messageBody.includes(palavra))) {
-                      await sendMessage('Que bom, pode me falar o nome do seu corretor para que eu possa te encaminhar diretamente pra ele?')
-                      conversation.step = 5;
-
-                      client.once('message', async (response) => {
-                        const nomeCorretor = response.body;
-                        conversation.corretor = nomeCorretor;
-
-                        const mensagem = `Olá, meu corretor é o ${nomeCorretor}. Estou interessado em mais informações.`;
-                        const whatsappLink = `https://wa.me/5562981790169?text=${encodeURIComponent(mensagem)}`;
-
-                        await sendMessage(`Ei ${conversation.name}, aqui está o link para falar com seu corretor: ${whatsappLink}.`);
-                        await sendMessage('espero ter ajudado :)');
-                        delete conversations[from];
-                    });
-
+                        await sendMessage('Que bom, pode me falar o *nome do seu corretor* para que eu possa te encaminhar diretamente pra ele?');
+                        conversation.step = 6; // Avança para a próxima etapa onde o corretor será capturado
                     } else if (palavrasNao.some(palavra => messageBody.includes(palavra))) {
-                        await sendMessage(`Então ${conversation.name} imagino que você tenha algumas dúvidas de como funciona esse processo, posso te enviar um audio explicando como funciona?`)
-                        conversation.step = 6;
+                        await sendMessage(`Então ${conversation.name} imagino que você tenha algumas dúvidas de como funciona esse processo, *posso te enviar um audio* explicando como funciona?`);
+                        conversation.step = 7; // Atualiza o passo para a explicação do áudio
                     }
-                }, 1000);
+                }, 5000);
                 break;
             
             case 6:
                 setTimeout(async () => {
-                    if (palavrasSim.some(palavra => messageBody.includes(palavra))){
-                        await sendAudio('audioExplicativo', from);
-                        await sendMessage('Agora que você ouviu esse audio e tem uma noção maior do funcionamento, nós trabalhos com todas as regiões de Goiás, qual cidade você tem interesse?')
-                        conversation.step = 7;
-                    } else if (palavrasNao.some(palavra => messageBody.includes(palavra))) {
-                        await sendMessage("Ok, vou te enviar o link do nosso portal aonde você pode encontrar os nossos imóveis e ser redirecionado para um de nossos corretores de leilão: https://leilaoimoveisgoiania.com.br/");
-                        await sendMessage(`Muito obrigado por entrar em contato com a Nonato Imóveis, ${conversation.name}.`);
-                        delete conversations[from];
-                    }
-                }, 1000);
+                    // Neste ponto, estamos esperando o nome do corretor
+                    const nomeCorretor = messageBody.trim(); // Captura a mensagem completa como nome do corretor
+                    conversation.corretor = nomeCorretor; // Armazena o nome do corretor na conversa
+            
+                    const mensagem = `Olá, meu corretor é o ${nomeCorretor}. Estou interessado em mais informações.`;
+                    const whatsappLink = `https://wa.me/5562981790169?text=${encodeURIComponent(mensagem)}`;
+            
+                    await sendMessage(`Ei ${conversation.name}, aqui está o link para falar com seu corretor: ${whatsappLink}.`);
+                    await sendMessage('Espero ter ajudado :)');
+                    delete conversations[from]; // Finaliza a conversa
+                }, 5000);
                 break;
             
             case 7:
                 setTimeout(async () => {
-                    if (cidades.some(palavra => messageBody.includes(palavra))){
-                        await sendMessage (`Então ${conversation.name} nós trabalhamos com imóveis nessa cidade sim, a sua intenção é de moradia ou pra investimento?`)
-                        conversation.step = 8;
-                    } else if (cidades.every(palavra => !messageBody.includes(palavra))) {
-                        await sendMessage (`Infelizmente não estamos trabalho com essa cidade ainda ${conversation.name}, mas você pode conferir nossos outros imóveis no nosso site https://leilaoimoveisgoiania.com.br/`)
+                    if (palavrasSim.some(palavra => messageBody.includes(palavra))) {
+                        // Envia o áudio após 60 segundos
+                        await sendAudio('audioExplicativo', from);
+                        
+                        // Após 25 segundos do envio do áudio, envia a mensagem
+                        setTimeout(async () => {
+                            await sendMessage('Agora que você ouviu esse áudio e tem uma noção maior do funcionamento, nós trabalhamos com todas as regiões de Goiás, qual *cidade* você tem interesse?');
+                            conversation.step = 8;
+                        }, 25000); // 25 segundos de delay após o áudio
+                    } else if (palavrasNao.some(palavra => messageBody.includes(palavra))) {
+                        // Se a resposta for negativa, envia a mensagem imediatamente sem delay
+                        await sendMessage("Ok, vou te enviar o link do nosso portal aonde você pode encontrar os nossos imóveis e ser redirecionado para um de nossos corretores de leilão: https://leilaoimoveisgoiania.com.br/");
+                        await sendMessage(`Muito obrigado por entrar em contato com a Nonato Imóveis, ${conversation.name}.`);
                         delete conversations[from];
                     }
-                }, 1000);
-                break;
-
+                }, 60000); // 60 segundos de delay para enviar o áudio
+            break;
+            
             case 8:
+                setTimeout(async () => {
+                    // Converte a mensagem para minúsculas e separa as palavras
+                    const mensagemMinuscula = messageBody.toLowerCase();
+                    const palavrasMensagem = mensagemMinuscula.split(/\s+/); // Quebra a mensagem em palavras
+
+                    // Verifica se alguma das cidades está na lista de palavras da mensagem
+                    const cidadeEncontrada = cidades.some(cidade => 
+                        palavrasMensagem.includes(cidade.toLowerCase()) // Verifica se há uma correspondência exata
+                    );
+
+                    if (cidadeEncontrada) {
+                        // Cidade encontrada na mensagem
+                        await sendMessage(`Então ${conversation.name}, nós trabalhamos com imóveis nessa cidade sim, a sua intenção é de *moradia* ou pra *investimento*?`);
+                        conversation.step = 9;
+                    } else {
+                        // Nenhuma cidade encontrada na mensagem
+                        await sendMessage(`Infelizmente não estamos trabalhando com essa cidade ainda, ${conversation.name}, mas você pode conferir nossos outros imóveis no nosso site https://leilaoimoveisgoiania.com.br/`);
+                        delete conversations[from];
+                    }
+                }, 5000);
+            break;
+
+            case 9:
                 setTimeout(async () => {
                     if (
                     messageBody.includes('moradia') ||
@@ -250,13 +281,13 @@ const setupRoutes = (client) => {
                     messageBody.includes('ambos') ||
                     messageBody.includes('os dois')) 
                     {
-                        await sendMessage("Qual sua preferência de pagamento? A vista ou Financiado?");
-                        conversation.step = 9;
+                        await sendMessage("Qual sua preferência de pagamento? *A vista* ou *Financiado*?");
+                        conversation.step = 10;
                     }
-                }, 1000);
+                }, 5000);
             break;
 
-            case 9:
+            case 10:
                 setTimeout(async () => {
                     if (messageBody.includes('a vista') || messageBody.includes ('A vista') || messageBody.includes('avista') || messageBody.includes('Avista')){
                         await sendMessage('Então você tem interesse em nossos imóveis A vista? Vou te enviar o link do nosso portal com nossos imóveis a vista')
@@ -267,41 +298,41 @@ const setupRoutes = (client) => {
                         await sendMessage('https://encurtador.com.br/WULFf');
                         delete conversations[from];
                     }
-                }, 1000);
+                }, 5000);
             break;
 
-            case 10:
-                if (conversation.step === 10) { // Garante que a etapa anterior foi concluída
+            case 11:
+                if (conversation.step === 11) { // Garante que a etapa anterior foi concluída
                     await sendMessage('Olá, meu nome é Sabrina e vou te ajudar com o seu imóvel particular hoje');
             
                     // Avança automaticamente para a próxima etapa após 1 segundo
                     setTimeout(async () => {
-                        await sendMessage(`Vamos lá ${conversation.name}, a sua pretensão é para compra ou aluguel?`);
-                        conversation.step = 11; // Atualiza para a próxima etapa
-                    }, 1000); // Delay de 1 segundo para simular uma resposta automática
+                        await sendMessage(`Vamos lá ${conversation.name}, a sua pretensão é para *compra* ou *aluguel*?`);
+                        conversation.step = 12; // Atualiza para a próxima etapa
+                    }, 5000); // Delay de 1 segundo para simular uma resposta automática
                 }
                 break;
 
-            case 11:
+            case 12:
                 setTimeout(async () => {
                     if (messageBody.includes('compra') || messageBody.includes('comprar')) {
                         // Atualiza a URL com o segmento para compra
                         conversation.url += '/a-venda/';
-                        await sendMessage(`Ok ${conversation.name}, então você está interessado em comprar imóveis, mas que tipo de imóvel? Escolha um dos abaixo: Apartamento, Área, Casa, Chácara, Cobertura, Flat, Sobrado, Terreno, Andar corporativo, Galpão, Prédio, Sala, Fazenda. `);
-                        conversation.step = 12;
+                        await sendMessage(`Ok ${conversation.name}, então você está interessado em comprar imóveis, mas que tipo de imóvel? *Escolha um dos abaixo:* Apartamento, Área, Casa, Chácara, Cobertura, Flat, Sobrado, Terreno, Andar corporativo, Galpão, Prédio, Sala, Fazenda. `);
+                        conversation.step = 13;
                     } else if (messageBody.includes('venda') || messageBody.includes('alugar')) {
                         // Atualiza a URL com o segmento para aluguel
                         conversation.url += '/para-alugar/';
-                        await sendMessage(`Ok ${conversation.name}, então você está interessado em comprar imóveis, mas que tipo de imóvel? Escolha um dos abaixo: Apartamento, Área, Casa, Chácara, Cobertura, Flat, Sobrado, Terreno, Andar corporativo, Galpão, Prédio, Sala, Fazenda. `);
-                        conversation.step = 12;
+                        await sendMessage(`Ok ${conversation.name}, então você está interessado em comprar imóveis, mas que tipo de imóvel? *Escolha um dos abaixo:* Apartamento, Área, Casa, Chácara, Cobertura, Flat, Sobrado, Terreno, Andar corporativo, Galpão, Prédio, Sala, Fazenda. `);
+                        conversation.step = 13;
                     } else {
                         // Caso a resposta não seja compra ou aluguel
                         await sendMessage("Por favor, diga se você quer 'comprar' ou 'alugar'.");
                     }
-                }, 1000);
+                }, 5000);
                 break;
             
-            case 12:
+            case 13:
                 setTimeout(async () => {
                     // Lista de tipos de imóveis
                     const tiposImovel = ['apartamento', 'área', 'casa', 'chácara', 'cobertura', 'flat', 'sobrado', 'terreno', 'andar corporativo', 'galpão', 'prédio', 'sala', 'fazenda'];
@@ -312,18 +343,18 @@ const setupRoutes = (client) => {
                     if (tipoEscolhido) {
                         // Adiciona o tipo de imóvel à URL
                         conversation.url += `${tipoEscolhido}/goiania/`;
-                        await sendMessage(`Entendido, você está interessado em um ${tipoEscolhido}. Mas em qual localização? Por favor, diga o nome completo do setor, *acompanhado sempre de _Setor, Jardim ou Vila_*`);
-                        conversation.step = 13;
+                        await sendMessage(`Entendido, você está interessado em um ${tipoEscolhido}. Mas em qual localização? Por favor, diga o nome completo do setor, *acompanhado sempre de _Setor, Jardim, bairro, parque ou residencial ou Vila_*`);
+                        conversation.step = 14;
                     } else {
                         await sendMessage("Por favor, escolha um tipo de imóvel da lista.");
                     }
-                }, 1000);
+                }, 5000);
                 break;
                 
-            case 13:
+            case 14:
                 setTimeout(async () => {
                     // Verifica se o cliente mencionou 'setor', 'jardim' ou 'vila' no nome do local
-                    if (messageBody.includes('setor') || messageBody.includes('jardim') || messageBody.includes('vila')) {
+                    if (messageBody.includes('setor') || messageBody.includes('jardim') || messageBody.includes('vila') || messageBody.includes('residencial') || messageBody.includes('parque') || messageBody.includes('bairro')) {
                         // Armazena o nome completo do local (setor, jardim ou vila)
                         const local = messageBody.trim().toLowerCase().replace(/\s+/g, '-'); // Converte para minúsculas e substitui espaços por hífen
                 
@@ -331,15 +362,15 @@ const setupRoutes = (client) => {
                         conversation.url += local;
                             
                         // Pergunta sobre a finalidade
-                        await sendMessage(`Agora, para finalizar, qual é a finalidade do uso da propriedade? Escolha entre: residencial, industrial, comercial ou rural.`);
-                        conversation.step = 14;
+                        await sendMessage(`Agora, para finalizar, qual é a finalidade do uso da propriedade? *Escolha entre:* residencial, industrial, comercial ou rural.`);
+                        conversation.step = 15;
                     } else {
-                        await sendMessage("Por favor, insira um setor, jardim ou vila como parte do endereço.");
+                        await sendMessage("Por favor, insira um setor, jardim, parque, residencial, bairro ou vila como parte do endereço.");
                     }
-                }, 1000);
+                }, 5000);
                 break;
                 
-            case 14:
+            case 15:
                 setTimeout(async () => {
                     // Lista de finalidades permitidas
                     const finalidades = ['residencial', 'industrial', 'comercial', 'rural'];
@@ -353,13 +384,25 @@ const setupRoutes = (client) => {
                 
                         // Envia o link completo para o cliente
                         await sendMessage(`Perfeito! Aqui está o link completo com as opções que você selecionou: ${conversation.url}`);
-                            
-                        delete conversations[from]; // Finaliza a conversa
+                        await sendMessage('Posso te apresentar mais algum imóvel?')
+                        conversation.step = 16;
                     } else {
                         await sendMessage("Por favor, escolha entre as finalidades: residencial, industrial, comercial ou rural.");
                     }
-                }, 1000);
+                }, 5000);
                 break;
+
+                case 16:
+                    setTimeout(async () => {
+                        if (palavrasSim.some(palavra => messageBody.includes(palavra))){
+                            await sendMessage('Perfeito e pra esse imóvel você quer ele para *compra* ou para *aluguel*?')
+                            conversation.url = 'https://www.nonatoimoveis.com.br/imoveis';  // Reinicia a URL
+                            conversation.step = 12;
+                        } else if (palavrasNao.some(palavra => messageBody.includes(palavra))) {
+                            await sendMessage(`Tudo bem então ${conversation.name} Qualquer coisa pode reiniciar essa conversa comigo`)
+                            delete conversations[from]; // Finaliza a conversa
+                        } 
+                    }, 5000);
         }
     });
 };
