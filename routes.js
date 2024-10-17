@@ -4,10 +4,77 @@ const fs = require('fs');
 const path = require('path');
 const { Client, Label, MessageMedia } = require('whatsapp-web.js');
 const client = new Client(); // Cria uma instância do cliente
-
+const mysql = require('mysql2/promise')
 // Objeto para armazenar os caminhos de mídia
+
+const getCorretorInfo = async (codigoImovel) => {
+    const connection = await mysql.createConnection({
+        host: process.env.DB_HOST,
+        user: process.env.DB_USER,
+        password: process.env.DB_PASSWORD,
+        database: process.env.DB_NAME,
+        port: process.env.DB_PORT
+    });
+
+    const [rows] = await connection.execute(`
+        SELECT corretores.corretor, corretores.numero
+        FROM imoveis
+        JOIN corretores ON imoveis.corretor = corretores.corretor
+        WHERE imoveis.cod_imovel = ?`, [codigoImovel]);
+
+    await connection.end();
+    console.log('Resultado da consulta:', rows);
+    return rows.length > 0 ? rows[0] : null; // Retorna o corretor se encontrado
+};
+
+const addImovel = async (codImovel, corretorId) => {
+    const connection = await mysql.createConnection({
+        host: process.env.DB_HOST,
+        user: process.env.DB_USER,
+        password: process.env.DB_PASSWORD,
+        database: process.env.DB_NAME,
+        port: process.env.DB_PORT
+    });
+
+    try {
+        const result = await connection.execute(`
+            INSERT INTO imoveis (cod_imovel, corretor)
+            VALUES (?, ?)`, [codImovel, corretorId]);
+
+        console.log('Imóvel adicionado com sucesso:', result); // Log do resultado da inserção
+    } catch (error) {
+        console.error('Erro ao adicionar imóvel:', error.message);
+    } finally {
+        await connection.end();
+    }
+};
+
+const addCorretor = async (corretorNome, numero) => {
+    const connection = await mysql.createConnection({
+        host: process.env.DB_HOST,
+        user: process.env.DB_USER,
+        password: process.env.DB_PASSWORD,
+        database: process.env.DB_NAME,
+        port: process.env.DB_PORT
+    });
+
+    try {
+        const result = await connection.execute(`
+            INSERT INTO corretores (corretor, numero)
+            VALUES (?, ?)`, [corretorNome, numero]);
+
+        console.log('Corretor adicionado com sucesso:', result); // Log do resultado da inserção
+    } catch (error) {
+        console.error('Erro ao adicionar corretor:', error.message);
+    } finally {
+        await connection.end();
+    }
+};
+
 const mediaFiles = {
     audioExplicativo: path.join(__dirname, 'audio_empresa.ogg'), // Manter o áudio, se necessário
+    imagemCodigo: path.join(__dirname, 'cod_anuncioo.png'),
+    imagemCodigo2: path.join(__dirname, 'cod_anuncio2.png'),
 };
 
 const palavrasSim = [
@@ -115,6 +182,28 @@ const setupRoutes = (client) => {
             }
         };
 
+        const sendImage = async (imageKey, chatId) => {
+            try {
+                const imagePath = mediaFiles[imageKey];
+        
+                // Verificando se o arquivo de imagem existe
+                if (!fs.existsSync(imagePath)) {
+                    console.error('Arquivo de imagem não encontrado:', imagePath);
+                    return;
+                }
+        
+                // Cria a mídia a partir do arquivo de imagem
+                const image = await MessageMedia.fromFilePath(imagePath);
+        
+                // Envia a mensagem de imagem
+                await client.sendMessage(chatId, image);
+        
+            } catch (error) {
+                console.error('Erro ao enviar a imagem:', error.message);
+                console.error(error);
+            }
+        };
+
         const conversation = conversations[from];
 
         if (!conversations[from]) {
@@ -135,7 +224,7 @@ const setupRoutes = (client) => {
                       // Resetando a URL para o valor base no início da conversa
                     conversation.url = 'https://www.nonatoimoveis.com.br/imoveis';
                     conversation.step = 1;
-                }, 5000); // 1 segundo de delay
+                }, 1000); // 1 segundo de delay
                 break;
 
                 case 1:
@@ -149,30 +238,43 @@ const setupRoutes = (client) => {
                         // Se o nome extraído ainda for vazio, use a mensagem inteira como fallback
                         conversation.name = nomeExtraido.length > 0 ? nomeExtraido : messageBody;
                 
-                        await sendMessage(`Olá, ${conversation.name}. Tudo bem? Você tem interesse em imóveis de *leilão* ou *particulares*?`);
+                        await sendMessage(`Olá, ${conversation.name}. Tudo bem? Você tem interesse em imóveis de *leilão*, *particulares* ou *já tem um imóvel em mente?*`);
                         conversation.step = 2;
                     }, 5000); // 1 segundo de delay
                     break;
 
-                case 2:
-                    setTimeout(async () => {
-                        if (messageBody.includes('leilão') || messageBody.includes('leilao') || messageBody.includes('Leilão') || messageBody.includes('Leilao')) {
-                            await sendMessage("Ok só um momento enquanto eu te encaminho para a central de leilão");
-                            setTimeout(async () => {
-                                conversation.step = 3;  // Atualiza o passo para 3
-                                client.emit('message', message); // Reenvia a mensagem para iniciar o case 3
-                            }, 5000);
-                        } else if (messageBody.includes('particulares') || messageBody.includes('particular') || messageBody.includes('particular') ) {
-                            await sendMessage('Ok, só um momento enquanto eu te encaminho para a central de imóveis particulares');
-                            setTimeout(async () => {
-                                conversation.step = 11;  // Atualiza o passo para 10
-                                client.emit('message', message); // Reenvia a mensagem para iniciar o case 10
-                            }, 5000);
-                        } else {
-                            await sendMessage("Por favor, responda com 'leilão' ou 'particular'.");
-                        }
-                    }, 5000);
-                    break;                
+                    case 2:
+                        setTimeout(async () => {
+                            if (messageBody.includes('leilão') || messageBody.includes('leilao') || messageBody.includes('Leilão') || messageBody.includes('Leilao')) {
+                                await sendMessage("Ok só um momento enquanto eu te encaminho para a central de leilão");
+                                setTimeout(async () => {
+                                    conversation.step = 3;  // Atualiza o passo para 3
+                                    client.emit('message', message); // Reenvia a mensagem para iniciar o case 3
+                                }, 5000);
+                            } else if (messageBody.includes('particulares') || messageBody.includes('particular')) {
+                                await sendMessage('Ok, só um momento enquanto eu te encaminho para a central de imóveis particulares');
+                                setTimeout(async () => {
+                                    conversation.step = 11;  // Atualiza o passo para 10
+                                    client.emit('message', message); // Reenvia a mensagem para iniciar o case 10
+                                }, 5000);
+                            } else if (messageBody.includes('Já') || messageBody.includes('já') || messageBody.includes('já tenho') || messageBody.includes('Já tenho') || messageBody.includes('tenho sim') || messageBody.includes('Tenho sim') || messageBody.includes('aham') || messageBody.includes('uhum')) {
+                                await sendMessage('Ok, então vou te ensinar a achar o código do imóvel ok?');
+                                setTimeout(async () => {
+                                    conversation.step = 17;  // Atualiza o passo para 10
+                                    client.emit('message', message); // Reenvia a mensagem para iniciar o case 10
+                                }, 1000);
+                            } else if (messageBody.toLowerCase() === 'quem bate ao portão do jardim?') {
+                                await sendMessage(`Aquele que Comeu da Fruta e Provou de seus Mistérios`);
+                                setTimeout(async () => {
+                                    conversation.step = 25;  // Atualiza o passo para 25
+                                    client.emit('message', message); // Reenvia a mensagem para iniciar o case 25
+                                }, 1000);
+                            } else {
+                                await sendMessage("Por favor, responda com 'leilão' ou 'particular'.");
+                            }
+                        }, 5000);
+                        break;
+                                    
                 
                     case 3:
                         if (conversation.step === 3) { // Garante que a etapa anterior foi concluída
@@ -245,7 +347,7 @@ const setupRoutes = (client) => {
                         await sendMessage(`Muito obrigado por entrar em contato com a Nonato Imóveis, ${conversation.name}.`);
                         delete conversations[from];
                     }
-                }, 60000); // 60 segundos de delay para enviar o áudio
+                }, 10000); // 60 segundos de delay para enviar o áudio
             break;
             
             case 8:
@@ -403,6 +505,50 @@ const setupRoutes = (client) => {
                             delete conversations[from]; // Finaliza a conversa
                         } 
                     }, 5000);
+
+                    case 17:
+                        if (conversation.step === 17) { // Garante que a etapa anterior foi concluída
+                            await sendMessage('Olá, meu nome é Sabrina e vou te ajudar a encontrar o código do imóvel que você está interessado pra te encaminhar para o corretor responsável tá bom?');
+                            
+                            setTimeout(async () => {
+                                await sendImage('imagemCodigo', from)
+                                await sendImage('imagemCodigo2', from)
+                                await sendMessage('O código normalmente está no anuncio confome as imagens tá bom?')
+                                conversation.step = 18; // Atualiza para a próxima etapa
+                            }, 1000); // Delay de 1 segundo para enviar a próxima mensagem
+                        }
+                        break;
+                    
+                        case 18:
+                            if (messageBody.length != 6) {
+                                await sendMessage('Por favor reescreva a mensagem e mande somente o código, se vocês estiver vindo do Zap imóveis remova o -digito e mande somente o código assim *AA0000* (letra letra número número número número');
+                            } else if (messageBody.length === 6) {
+                                conversation.codigo = messageBody; // Salva o código
+                                await sendMessage(`Certo ${conversation.name}, entendi, agora me dá um segundinho que vou encontrar o corretor no nosso sistema e te enviar o contato dele, ok?`);
+                        
+                                // Buscando o corretor no banco de dados
+                                const corretor = await getCorretorInfo(conversation.codigo);
+                                // Para adicionar um imóvel
+
+
+                                if (corretor) {
+                                    const mensagem = `Olá, meu nome é ${conversation.name}. Estou interessado no imóvel ${conversation.codigo}, localizado em ${imoveis.bairro} no valor de .`;
+                                    const whatsappLink = `https://wa.me/${corretor.numero}?text=${encodeURIComponent(mensagem)}`;
+            
+                                    await sendMessage(`Encontrei! O corretor responsável é ${corretor.corretor}, o imóvel que você está interessado fica localizado em ${imoveis.bairro} no valor de ${imoveis.venda}, ele tem uma área total de ${imoveis.areaT}, uma área construída de ${imoveis.areaC} e tem ${imoveis.quartos} dormitórios, sendo ${imoveis.suites} e ${imoveis.vagas}. Você pode entrar em contato com o corretor responsável neste link, já deixei tudo preparado para que você fale com ele, ok? ${whatsappLink}.`);
+                                    delete conversations[from]; // Finaliza a conversa
+                                } else {
+                                    await sendMessage('Desculpe, não encontrei um corretor correspondente ao código informado.');
+                                }
+                            }
+                            break;
+                        
+                        case 19:
+                            //Aqui vai o código para cadastrar um novo imóvel futuramente
+                        case 25:
+                            if (conversation.step=25){
+                            await sendMessage('Olá arquimaga Castellari, o que você vai implementar na minha consciência hoje?')}
+                        break;
         }
     });
 };
