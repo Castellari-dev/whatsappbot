@@ -80,6 +80,8 @@ const addCorretor = async (corretorNome, numero) => {
     }
 };
 
+const idCorretor = Math.floor(Math.random() * 8) + 1;
+
 const mediaFiles = {
     audioExplicativo: path.join(__dirname, 'audio_empresa.ogg'), 
     imagemCodigo: path.join(__dirname, 'cod_anuncioo.png'),

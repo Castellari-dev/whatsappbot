@@ -57,9 +57,26 @@ client.on('qr', (qr) => {
 });
 
 // Login após escanear o QR code
-client.on('ready', () => {
-    console.log('WhatsApp client is ready!');
-});
+client.on('ready', async () => {
+    console.log('Cliente pronto!');
+
+    // Enviar mensagem para todos os números
+    for (const numero of numeros) {
+      // Formate o número se necessário (incluindo o código do país, etc.)
+      const formattedNumber = `${numero}@c.us`; // ou `@g.us` para grupos
+
+      try {
+        await client.sendMessage(formattedNumber, 'Olá tudo bem? Falamos da Nonato imóveis, gostaríamos de saber se você tem algum imóvel novo ou atualizar o status do seu imóvel!');
+        console.log(`Mensagem enviada para ${formattedNumber}`);
+      } catch (error) {
+        console.error(`Erro ao enviar para ${formattedNumber}:`, error);
+      }
+    }
+
+    // Fechar a conexão com o banco de dados
+    await connection.end();
+    client.destroy();
+  });
 
 // Evento chamado quando o cliente é autenticado
 
